@@ -74,6 +74,8 @@ double joyToCheckObstacleDelay = 5.0;
 double goalClearRange = 0.5;
 double goalX = 0;
 double goalY = 0;
+bool backToZero = false;
+bool systemInit = false;
 
 float joySpeed = 0;
 float joySpeedRaw = 0;
@@ -138,6 +140,13 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr& odom)
   vehicleX = odom->pose.pose.position.x - cos(yaw) * sensorOffsetX + sin(yaw) * sensorOffsetY;
   vehicleY = odom->pose.pose.position.y - sin(yaw) * sensorOffsetX - cos(yaw) * sensorOffsetY;
   vehicleZ = odom->pose.pose.position.z;
+  if (!systemInit) {
+    if (!backToZero) {
+      goalX = vehicleX;
+      goalY = vehicleY;
+    }
+    systemInit = true;
+  }
 }
 
 void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
@@ -232,6 +241,15 @@ void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
     checkObstacle = true;
   } else {
     checkObstacle = false;
+  }
+
+  // NOTE(gogojjh):
+  // Joystick control rule: 
+  // backward-forward: ax[4] in [-1, 1], ax[3] = 0
+  // clockwise-counterclockwise rotate: ax[3] in [-1, 1], ax[4] = 0
+  // not move for other joystick states:
+  if (abs(joy->axes[3]) > 0.05 && abs(joy->axes[4]) > 0.05) {
+    joySpeed = 0;
   }
 }
 
@@ -535,6 +553,7 @@ int main(int argc, char** argv)
   nhPrivate.getParam("goalClearRange", goalClearRange);
   nhPrivate.getParam("goalX", goalX);
   nhPrivate.getParam("goalY", goalY);
+  nhPrivate.getParam("backToZero", backToZero);
 
   ros::Subscriber subOdometry = nh.subscribe<nav_msgs::Odometry>
                                 ("/state_estimation", 5, odometryHandler);

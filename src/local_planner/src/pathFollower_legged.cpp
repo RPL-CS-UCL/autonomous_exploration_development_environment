@@ -140,39 +140,35 @@ void pathHandler(const nav_msgs::Path::ConstPtr& pathIn)
 
 void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
 {
-  // joySpeedRaw = sqrt(joy->axes[3] * joy->axes[3] + joy->axes[4] * joy->axes[4]);
-  // joySpeed = joySpeedRaw;
-  // if (joySpeed > 1.0) joySpeed = 1.0;
+  joyTime = ros::Time::now().toSec();
 
-  // joySpeed_x = abs(joy->axes[4]);
-  // joySpeed_y = abs(joy->axes[3]);
-  // if (joySpeed_x > 1.0) joySpeed_x = 1.0;
-  // if (joySpeed_y > 1.0) joySpeed_y = 1.0;
-  
-  // if (joy->axes[4] == 0) joySpeed = 0;
-  // if (joy->axes[4] == 0) joySpeed_x = 0;
-  // if (joy->axes[3] == 0) joySpeed_y = 0;
+  joySpeedRaw = sqrt(joy->axes[3] * joy->axes[3] + joy->axes[4] * joy->axes[4]);
+  joySpeed = joySpeedRaw;
+  if (joySpeed > 1.0) joySpeed = 1.0;
+  if (joy->axes[4] == 0) joySpeed = 0;
+  joyYaw = joy->axes[3];
+  if (joySpeed == 0 && noRotAtStop) joyYaw = 0;
 
-  // DEBUG(gogojjh):
-  // joyTime = ros::Time::now().toSec();
+  if (joy->axes[4] < 0 && !twoWayDrive) {
+    joySpeed = 0;
+    joyYaw = 0;
+  }
 
-  // joySpeedRaw = sqrt(joy->axes[3] * joy->axes[3] + joy->axes[4] * joy->axes[4]);
-  // joySpeed = joySpeedRaw;
-  // if (joySpeed > 1.0) joySpeed = 1.0;
-  // if (joy->axes[4] == 0) joySpeed = 0;
-  // joyYaw = joy->axes[3];
-  // if (joySpeed == 0 && noRotAtStop) joyYaw = 0;
+  if (joy->axes[2] > -0.1) {
+    autonomyMode = false;
+  } else {
+    autonomyMode = true;
+  }
 
-  // if (joy->axes[4] < 0 && !twoWayDrive) {
-  //   joySpeed = 0;
-  //   joyYaw = 0;
-  // }
-
-  // if (joy->axes[2] > -0.1) {
-  //   autonomyMode = false;
-  // } else {
-  //   autonomyMode = true;
-  // }
+  // NOTE(gogojjh):
+  // Joystick control rule: 
+  // backward-forward: ax[4] in [-1, 1], ax[3] = 0
+  // clockwise-counterclockwise rotate: ax[3] in [-1, 1], ax[4] = 0
+  // not move for other joystick states:
+  if (abs(joy->axes[3]) > 0.05 && abs(joy->axes[4]) > 0.05) {
+    joySpeed = 0;
+    joyYaw = 0;
+  }
 }
 
 void speedHandler(const std_msgs::Float32::ConstPtr& speed)
