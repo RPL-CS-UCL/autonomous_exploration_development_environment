@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
 import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 import rospy
 from std_msgs.msg import Float32
