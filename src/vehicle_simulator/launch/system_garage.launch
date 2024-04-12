@@ -13,7 +13,7 @@
 
   <include file="$(find ps3joy)/launch/ps3.launch" />
 
-  <group if="$(arg use_local_planner)">
+  <group if="$(arg useLocalPlanner)">
     <include file="$(find local_planner)/launch/local_planner.launch" >
       <arg name="cameraOffsetZ" value="$(arg cameraOffsetZ)"/>
       <arg name="goalX" value="$(arg vehicleX)"/>
