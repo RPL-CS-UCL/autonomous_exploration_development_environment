@@ -5,7 +5,7 @@
       <uri>model://sun</uri>
     </include>
     <include>
-      <uri>model://underground_parking_01</uri>
+      <uri>model://hkustgz_campus_north_building</uri>
     </include>
     <plugin name="ros_interface_plugin" filename="librotors_gazebo_ros_interface_plugin.so"/>
 

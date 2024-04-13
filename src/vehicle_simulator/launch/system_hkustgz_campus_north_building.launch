@@ -1,11 +1,11 @@
 <launch>
 
-  <arg name="world_name" default="underground_parking_01"/>
+  <arg name="world_name" default="hkustgz_campus_north_building"/>
   <arg name="vehicleHeight" default="0.5"/>
   <arg name="cameraOffsetZ" default="0"/>
-  <arg name="vehicleX" default="-357.7"/>
-  <arg name="vehicleY" default="-28.926"/>
-  <arg name="terrainZ" default="-2.15"/>
+  <arg name="vehicleX" default="-497.904572"/> 
+  <arg name="vehicleY" default="-575.693237"/>
+  <arg name="terrainZ" default="-2.60"/>
   <arg name="vehicleYaw" default="0"/>
   <arg name="gazebo_gui" default="false"/>
   <arg name="checkTerrainConn" default="false"/>
