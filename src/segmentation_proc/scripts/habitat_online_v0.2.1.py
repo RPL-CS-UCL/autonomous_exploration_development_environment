@@ -1,5 +1,12 @@
 #!/usr/bin/python3
 
+import habitat_sim
+import habitat_sim.agent
+from habitat_sim.utils.common import (
+    d3_40_colors_rgb,
+    quat_from_coeffs,
+)
+
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image as ROS_Image
@@ -16,13 +23,6 @@ from enum import Enum
 
 import numpy as np
 from PIL import Image
-
-import habitat_sim
-import habitat_sim.agent
-from habitat_sim.utils.common import (
-    d3_40_colors_rgb,
-    quat_from_coeffs,
-)
 
 from scipy.spatial.transform import Rotation as R
 
@@ -65,7 +65,9 @@ def make_cfg(settings):
         camera_sensor_spec = habitat_sim.CameraSensorSpec()
         camera_sensor_spec.sensor_type = habitat_sim.SensorType.COLOR
         camera_sensor_spec.resolution = [settings["height"], settings["width"]]
-        camera_sensor_spec.position = [0, 0, 0]
+        camera_sensor_spec.position[0] = 0
+        camera_sensor_spec.position[1] = 0
+        camera_sensor_spec.position[2] = 0
         for k in kw_args:
             setattr(camera_sensor_spec, k, kw_args[k])
         return camera_sensor_spec
