@@ -1,6 +1,6 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="example">
 
-  <link name="rgbd_camera">
+  <link name="camera">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -22,8 +22,8 @@
     </inertial>
   </link>
 
-  <gazebo reference="rgbd_camera">
-    <sensor type="depth" name="rgbd_camera">
+  <gazebo reference="camera">
+    <sensor type="depth" name="camera">
       <update_rate>30.0</update_rate>
       <camera name="head">
         <horizontal_fov>2.0</horizontal_fov>
@@ -37,7 +37,7 @@
           <far>30.0</far>
         </clip>
       </camera>
-      <plugin name="rgbd_camera_controller" filename="libgazebo_ros_depth_camera.so">
+      <plugin name="rgbd_camera_controller" filename="libgazebo_ros_openni_kinect.so">
         <alwaysOn>true</alwaysOn>
           <baseline>0.2</baseline>
           <cameraName>rgbd_camera</cameraName>
