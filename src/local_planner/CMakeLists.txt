@@ -57,8 +57,6 @@ add_executable(pathFollower_legged src/pathFollower_legged.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(localPlanner ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 target_link_libraries(pathFollower ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-target_link_libraries(localPlanner_legged ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-target_link_libraries(pathFollower_legged ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 install(TARGETS localPlanner pathFollower localPlanner_legged pathFollower_legged
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
