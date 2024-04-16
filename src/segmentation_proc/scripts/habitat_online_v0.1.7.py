@@ -1,5 +1,12 @@
 #!/usr/bin/python3
 
+import habitat_sim
+import habitat_sim.agent
+from habitat_sim.utils.common import (
+    d3_40_colors_rgb,
+    quat_from_coeffs,
+)
+
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image as ROS_Image
@@ -16,13 +23,6 @@ from enum import Enum
 
 import numpy as np
 from PIL import Image
-
-import habitat_sim
-import habitat_sim.agent
-from habitat_sim.utils.common import (
-    d3_40_colors_rgb,
-    quat_from_coeffs,
-)
 
 from scipy.spatial.transform import Rotation as R
 
