@@ -20,7 +20,7 @@
       <arg name="goalY" value="$(arg vehicleY)"/>
     </include>
   </group>
-
+  
   <include file="$(find terrain_analysis)/launch/terrain_analysis.launch" />
 
   <include file="$(find terrain_analysis_ext)/launch/terrain_analysis_ext.launch" >
