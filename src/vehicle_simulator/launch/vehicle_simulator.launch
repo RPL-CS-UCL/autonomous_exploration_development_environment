@@ -80,4 +80,6 @@
 
   <node pkg="tf" type="static_transform_publisher" name="sensorTransPublisher" args="0 0 $(arg cameraOffsetZ) -1.5707963 0 -1.5707963 /sensor /rgbd_camera 1000"/>
 
+  <node pkg="tf" type="static_transform_publisher" name="habitatTransPublisher" args="0 0 0 0 0 0 /rgbd_camera /habitat_camera 1000"/>
+
 </launch>
