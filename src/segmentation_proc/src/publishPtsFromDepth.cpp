@@ -152,12 +152,12 @@ int main(int argc, char** argv) {
   ros::NodeHandle nh, nh_private("~");
 
   // clang-format off
-  float width = 640.0f;
-  float height = 360.0f;
-  float hfov = 114.591560981; // deg
-  float f = width / (2.0 * tan(hfov / 2.0 * M_PI / 180.0));
-  float cx = width / 2.0;
-  float cy = height / 2.0;
+  const float width = 640.0f;
+  const float height = 360.0f;
+  const float hfov = 114.591560981; // deg
+  const float f = width / (2.0 * tan(hfov / 2.0 * M_PI / 180.0));
+  const float cx = width / 2.0;
+  const float cy = height / 2.0;
   camera_intrinsics << f, 0.0, cx, 0.0, f, cy, 0.0, 0.0, 1.0;
   std::cout << "camera_intrinsics: \n" << camera_intrinsics << std::endl;
 
