@@ -169,8 +169,8 @@ int main(int argc, char** argv) {
   message_filters::Subscriber<sensor_msgs::Image> depth_sub(nh, "/habitat_camera/depth/image", 10);
   message_filters::Subscriber<sensor_msgs::Image> color_sub(nh, "/habitat_camera/color/image", 10);
   message_filters::Subscriber<sensor_msgs::Image> sem_sub(nh, "/habitat_camera/semantic/image", 10);
-  message_filters::Synchronizer<RGBDSyncPolicy> color_depth_sync(RGBDSyncPolicy(1000), color_sub, depth_sub);
-  message_filters::Synchronizer<RGBDSyncPolicy> sem_depth_sync(RGBDSyncPolicy(1000), sem_sub, depth_sub);
+  message_filters::Synchronizer<RGBDSyncPolicy> color_depth_sync(RGBDSyncPolicy(100), color_sub, depth_sub);
+  message_filters::Synchronizer<RGBDSyncPolicy> sem_depth_sync(RGBDSyncPolicy(100), sem_sub, depth_sub);
   color_depth_sync.registerCallback(boost::bind(&ColorDepthImageCallback, _1, _2));
   sem_depth_sync.registerCallback(boost::bind(&SemDepthImageCallback, _1, _2));
   ros::spin();
