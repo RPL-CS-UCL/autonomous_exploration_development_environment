@@ -12,9 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   pcl_ros
+  cv_bridge
 )
 
 find_package(PCL REQUIRED)
+find_package(OpenCV REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -26,6 +28,7 @@ catkin_package(
   std_msgs
   sensor_msgs
   pcl_ros
+  cv_bridge
 )
 
 ###########
@@ -50,11 +53,13 @@ link_directories(
 
 ## Declare executables
 add_executable(segmentationProc src/segmentationProc.cpp)
+add_executable(publishPtsFromDepth src/publishPtsFromDepth.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(segmentationProc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(publishPtsFromDepth ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
-install(TARGETS segmentationProc
+install(TARGETS segmentationProc publishPtsFromDepth
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

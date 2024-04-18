@@ -46,42 +46,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--scene", type=str, default=default_sim_settings["scene"])
 args = parser.parse_args()
 
-def create_point_cloud_msg(depth_obs, color_img, frame_id, time):
-    camera_intrinsics = np.array([[205.46963709898583, 0.0, 320.5], [0.0, 205.46963709898583, 180.5], [0.0, 0.0, 1.0]])
-
-    h, w = depth_obs.shape
-    i, j = np.meshgrid(np.arange(w), np.arange(h), indexing='xy')
-    valid = (depth_obs > 0) & (depth_obs < 30.0)
-    z = depth_obs[valid]
-    x = (i[valid] - camera_intrinsics[0, 0]) * z / camera_intrinsics[1, 2]
-    y = (j[valid] - camera_intrinsics[1, 1]) * z / camera_intrinsics[0, 2]
-    points = np.stack([x, y, z], axis=-1)
-    # colors_tmp = color_img[valid]
-    # print(colors_tmp.shape)
-    # colors = colors_tmp[:, [0, 1, 2, 3]]
-    # colors = np.array(colors_tmp[:, 2], colors_tmp[:, 1], colors_tmp[:, 0], colors_tmp[:, 3])
-    # print(colors.shape)
-    colors = color_img[valid]
-
-    msg = ROS_PointCloud2()
-    msg.header = Header(frame_id=frame_id, stamp=rospy.Time.from_sec(time))
-    msg.fields.append(pc2.PointField(name='x', offset=0, datatype=pc2.PointField.FLOAT32, count=1))
-    msg.fields.append(pc2.PointField(name='y', offset=4, datatype=pc2.PointField.FLOAT32, count=1))
-    msg.fields.append(pc2.PointField(name='z', offset=8, datatype=pc2.PointField.FLOAT32, count=1))
-    msg.fields.append(pc2.PointField(name='rgb', offset=12, datatype=pc2.PointField.UINT32, count=1))
-    pointsColor = np.zeros((points.shape[0], 1), dtype={"names": ( "x", "y", "z", "rgba"), "formats": ( "f4", "f4", "f4", "u4")})
-    pointsColor["x"] = points[:, 0].reshape((-1, 1)).astype(np.float32)
-    pointsColor["y"] = points[:, 1].reshape((-1, 1)).astype(np.float32)
-    pointsColor["z"] = points[:, 2].reshape((-1, 1)).astype(np.float32)
-    pointsColor["rgba"] = colors.view('uint32')
-    msg.data = pointsColor.tostring()
-    msg.point_step = 16
-    msg.height = 1
-    msg.width = points.shape[0]	
-    msg.row_step = msg.point_step * msg.width
-    msg.is_bigendian = False
-    return msg
-
 def make_settings():
     settings = default_sim_settings.copy()
     settings["scene"] = args.scene
@@ -179,25 +143,11 @@ class DemoRunner:
 
     def publish_depth_observation(self, obs):
         depth_obs = obs["depth_sensor"]
-        depth_img = Image.fromarray((depth_obs / 10 * 255).astype(np.uint8), mode="L")
-        self.depth_image.data = np.array(depth_img.convert("L")).tobytes()
+        from cv_bridge import CvBridge
+        bridge = CvBridge()
+        self.depth_image = bridge.cv2_to_imgmsg(depth_obs, encoding="32FC1", header=self.depth_image.header)
         self.depth_image.header.stamp = rospy.Time.from_sec(self.time)
         self.depth_image_pub.publish(self.depth_image)
-
-    def publish_color_pointcloud_observation(self, obs):
-        depth_obs = obs["depth_sensor"]
-        color_obs = obs["color_sensor"]
-        point_cloud_msg = create_point_cloud_msg(depth_obs, color_obs, 'habitat_camera', self.time)
-        self.color_pointcloud_pub.publish(point_cloud_msg)
-
-    def publish_semantic_pointcloud_observation(self, obs):
-        depth_obs = obs["depth_sensor"]
-        # semantic_obs = obs["semantic_sensor"]
-        # semantic_img = Image.new("P", (semantic_obs.shape[1], semantic_obs.shape[0]))
-        # semantic_img.putpalette(d3_40_colors_rgb.flatten())
-        # semantic_img.putdata((semantic_obs.flatten() % 40).astype(np.uint8))
-        # point_cloud_msg = create_point_cloud_msg(depth_obs, np.asarray(semantic_img, order='C'), 'habitat_camera', self.time)
-        self.semantic_pointcloud_pub.publish(point_cloud_msg)
 
     def init_common(self):
         self._cfg = make_cfg(self._sim_settings)
@@ -262,12 +212,6 @@ class DemoRunner:
             self.semantic_image.step = 3 * self.color_image.width
             self.semantic_image.is_bigendian = False
 
-        if self._sim_settings["color_sensor"] and self._sim_settings["depth_sensor"]:
-            self.color_pointcloud_pub = rospy.Publisher("/habitat_camera/color_pointcloud", ROS_PointCloud2, queue_size=2)
-
-        if self._sim_settings["semantic_sensor"] and self._sim_settings["depth_sensor"]:
-            self.semantic_pointcloud_pub = rospy.Publisher("/habitat_camera/semantic_pointcloud", ROS_PointCloud2, queue_size=2)
-
         r = rospy.Rate(default_sim_settings["frame_rate"])
         while not rospy.is_shutdown():
             roll = -self.camera_roll
@@ -296,10 +240,6 @@ class DemoRunner:
                 self.publish_depth_observation(observations)
             if self._sim_settings["semantic_sensor"]:
                 self.publish_semantic_observation(observations)
-            if self._sim_settings["color_sensor"] and self._sim_settings["depth_sensor"]:
-                self.publish_color_pointcloud_observation(observations)
-            if self._sim_settings["semantic_sensor"] and self._sim_settings["depth_sensor"]:
-                self.publish_semantic_pointcloud_observation(observations)
 
             state = self._sim.last_state()
             print("Publishing at time: " + str(self.time))
