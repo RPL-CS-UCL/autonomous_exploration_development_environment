@@ -2,21 +2,24 @@
 
   <arg name="world_name" default="underground_parking_01"/>
   <arg name="vehicleHeight" default="0.5"/>
-  <arg name="cameraOffsetZ" default="0"/>
+  <arg name="cameraOffsetZ" default="0.5"/>
   <arg name="vehicleX" default="-357.7"/>
   <arg name="vehicleY" default="-28.926"/>
   <arg name="terrainZ" default="-2.15"/>
-  <arg name="vehicleYaw" default="0"/>
+  <arg name="vehicleYaw" default="3.1415926"/>
   <arg name="gazebo_gui" default="false"/>
   <arg name="checkTerrainConn" default="false"/>
+  <arg name="useLocalPlanner" default="true" />  
 
   <include file="$(find ps3joy)/launch/ps3.launch" />
 
-  <include file="$(find local_planner)/launch/local_planner.launch" >
-    <arg name="cameraOffsetZ" value="$(arg cameraOffsetZ)"/>
-    <arg name="goalX" value="$(arg vehicleX)"/>
-    <arg name="goalY" value="$(arg vehicleY)"/>
-  </include>
+  <group if="$(arg useLocalPlanner)">
+    <include file="$(find local_planner)/launch/local_planner.launch" >
+      <arg name="cameraOffsetZ" value="$(arg cameraOffsetZ)"/>
+      <arg name="goalX" value="$(arg vehicleX)"/>
+      <arg name="goalY" value="$(arg vehicleY)"/>
+    </include>
+  </group>
 
   <include file="$(find terrain_analysis)/launch/terrain_analysis.launch" />
 
@@ -41,6 +44,6 @@
     <arg name="world_name" value="$(arg world_name)"/>
   </include>
 
-  <node launch-prefix="nice" pkg="rviz" type="rviz" name="rvizGA" args="-d $(find vehicle_simulator)/rviz/vehicle_simulator.rviz" respawn="true"/>
+  <node launch-prefix="nice" pkg="rviz" type="rviz" name="rvizGA" args="-d $(find vehicle_simulator)/rviz/vehicle_simulator_cloudrender.rviz" respawn="true"/>
 
 </launch>
