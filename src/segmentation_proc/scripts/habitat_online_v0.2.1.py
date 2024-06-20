@@ -31,7 +31,7 @@ default_sim_settings = {
     "width": 640, # horizontal resolution
     "height": 360, # vertical resolution
     "hfov": 114.591560981, # horizontal FOV
-    "camera_offset_z": 0, # camera z-offset
+    "camera_offset_z": 0.5, # camera z-offset
     "color_sensor": True,  # RGB sensor
     "depth_sensor": True,  # depth sensor
     "semantic_sensor": True,  # semantic sensor
@@ -65,9 +65,7 @@ def make_cfg(settings):
         camera_sensor_spec = habitat_sim.CameraSensorSpec()
         camera_sensor_spec.sensor_type = habitat_sim.SensorType.COLOR
         camera_sensor_spec.resolution = [settings["height"], settings["width"]]
-        camera_sensor_spec.position[0] = 0
-        camera_sensor_spec.position[1] = 0
-        camera_sensor_spec.position[2] = 0
+        camera_sensor_spec.position = [0, 0, 0]
         for k in kw_args:
             setattr(camera_sensor_spec, k, kw_args[k])
         return camera_sensor_spec
@@ -212,6 +210,8 @@ class DemoRunner:
 
         r = rospy.Rate(default_sim_settings["frame_rate"])
         while not rospy.is_shutdown():
+            ######################################################
+            # NOTE(gogojjh): this code is the transform the camera coordinate into the correct habitat camera coordinate
             roll = -self.camera_roll
             pitch = self.camera_pitch
             yaw = 1.5708 - self.camera_yaw
@@ -228,6 +228,7 @@ class DemoRunner:
             for sensor in agent_state.sensor_states:
                 agent_state.sensor_states[sensor].position = position + np.array([0, default_sim_settings["camera_offset_z"], 0])
                 agent_state.sensor_states[sensor].rotation = quat_from_coeffs(np.array([-qy, -qz, qx, qw]))
+            ######################################################
 
             self._sim.get_agent(0).set_state(agent_state, infer_sensor_states = False)
             observations = self._sim.step("move_forward")

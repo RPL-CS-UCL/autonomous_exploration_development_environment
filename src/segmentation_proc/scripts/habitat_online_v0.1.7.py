@@ -34,7 +34,7 @@ default_sim_settings = {
     "frame_rate": 30, # image frame rate
     "width": 640, # horizontal resolution
     "height": 360, # vertical resolution
-    "hfov": "114.591560981", # horizontal FOV
+    "hfov": 114.591560981, # horizontal FOV
     "camera_offset_z": 0, # camera z-offset
     "color_sensor": True,  # RGB sensor
     "depth_sensor": True,  # depth sensor
@@ -92,6 +92,7 @@ def make_cfg(settings):
     for sensor_uuid, sensor_params in sensors.items():
         if settings[sensor_uuid]:
             sensor_spec = habitat_sim.SensorSpec()
+            print(dir(sensor_spec))
             sensor_spec.uuid = sensor_uuid
             sensor_spec.sensor_type = sensor_params["sensor_type"]
             sensor_spec.sensor_subtype = sensor_params["sensor_subtype"]
