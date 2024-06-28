@@ -122,6 +122,30 @@ class DemoRunner:
     def set_sim_settings(self, sim_settings):
         self._sim_settings = sim_settings.copy()
 
+    def publish_camera_odometry(self):
+        camera_odom = Odometry()
+        camera_odom.header.stamp = rospy.Time.from_sec(self.time)
+        camera_odom.header.frame_id = 'map'
+        camera_odom.child_frame_id = 'rgbd_camera'
+        roll = self.camera_roll - 1.5708
+        pitch = self.camera_pitch
+        yaw = self.camera_yaw - 1.5708
+        qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+        qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
+        qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
+        qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)            
+        camera_odom.pose.pose.orientation.x = qx
+        camera_odom.pose.pose.orientation.y = qy
+        camera_odom.pose.pose.orientation.z = qz
+        camera_odom.pose.pose.orientation.w = qw
+        x = self.camera_x
+        y = self.camera_y
+        z = self.camera_z + default_sim_settings["camera_offset_z"]
+        camera_odom.pose.pose.position.x = x
+        camera_odom.pose.pose.position.y = y
+        camera_odom.pose.pose.position.z = z
+        self.camera_odom_pub.publish(camera_odom)        
+
     def publish_color_observation(self, obs):
         color_obs = obs["color_sensor"]
         color_img = Image.fromarray(color_obs, mode="RGBA")
@@ -178,6 +202,8 @@ class DemoRunner:
         self.camera_y = 0
         self.camera_z = 0.5
 
+        self.camera_odom_pub = rospy.Publisher("/habitat_camera/odometry", Odometry, queue_size=2)
+
         if self._sim_settings["color_sensor"]:
             self.color_image_pub = rospy.Publisher("/habitat_camera/color/image", ROS_Image, queue_size=2)
             self.color_image = ROS_Image()
@@ -211,7 +237,7 @@ class DemoRunner:
         r = rospy.Rate(default_sim_settings["frame_rate"])
         while not rospy.is_shutdown():
             ######################################################
-            # NOTE(gogojjh): this code is the transform the camera coordinate into the correct habitat camera coordinate
+            # NOTE(gogojjh): this code is transforming the camera coordinate into the correct habitat camera coordinate
             roll = -self.camera_roll
             pitch = self.camera_pitch
             yaw = 1.5708 - self.camera_yaw
@@ -233,6 +259,8 @@ class DemoRunner:
             self._sim.get_agent(0).set_state(agent_state, infer_sensor_states = False)
             observations = self._sim.step("move_forward")
 
+            ######################################################
+            self.publish_camera_odometry()
             if self._sim_settings["color_sensor"]:
                 self.publish_color_observation(observations)
             if self._sim_settings["depth_sensor"]:
