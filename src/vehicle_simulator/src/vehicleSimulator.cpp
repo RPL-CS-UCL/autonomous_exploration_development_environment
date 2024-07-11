@@ -337,7 +337,7 @@ int main(int argc, char** argv)
 
   nav_msgs::Odometry odomData;
   odomData.header.frame_id = "map";
-  odomData.child_frame_id = "sensor";
+  odomData.child_frame_id = "sensor"; // same as the lidar frame (velodyne)
 
   tf::TransformBroadcaster tfBroadcaster;
   tf::StampedTransform odomTrans;
@@ -349,6 +349,8 @@ int main(int argc, char** argv)
   cameraState.model_name = "rgbd_camera";
   gazebo_msgs::ModelState lidarState;
   lidarState.model_name = "lidar";
+  gazebo_msgs::ModelState imuState;
+  imuState.model_name = "imu";
   gazebo_msgs::ModelState robotState;
   robotState.model_name = "robot";
 
@@ -431,6 +433,12 @@ int main(int argc, char** argv)
     robotState.pose.position.y = vehicleY;
     robotState.pose.position.z = vehicleZ;
     pubModelState.publish(robotState);
+
+    imuState.pose.orientation = geoQuat;
+    imuState.pose.position.x = vehicleX;
+    imuState.pose.position.y = vehicleY;
+    imuState.pose.position.z = vehicleZ;
+    pubModelState.publish(imuState);
 
     geoQuat = tf::createQuaternionMsgFromRollPitchYaw(terrainRoll, terrainPitch, 0);
 
