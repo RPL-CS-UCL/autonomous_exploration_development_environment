@@ -4,14 +4,14 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.001 0.001 0.001"/>
+        <box size="0.01 0.01 0.01"/>
       </geometry>
     </collision>
 
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.001 0.001 0.001"/>
+        <box size="0.01 0.01 0.01"/>
       </geometry>
     </visual>
 
@@ -38,7 +38,7 @@
         </clip>
       </camera>
       <plugin name="rgbd_camera_controller" filename="libgazebo_ros_openni_kinect.so">
-        <alwaysOn>true</alwaysOn>
+          <alwaysOn>true</alwaysOn>
           <baseline>0.2</baseline>
           <cameraName>rgbd_camera</cameraName>
           <imageTopicName>/rgbd_camera/color/image</imageTopicName>
