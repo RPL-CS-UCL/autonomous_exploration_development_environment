@@ -44,7 +44,7 @@
 
   <!-- Add URDF of a robot -->
   <param name="camera_description" command="$(find xacro)/xacro --inorder '$(find vehicle_simulator)/urdf/rgbd_camera.urdf.xacro'" />
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_camera" args="-urdf -param /camera_description -model camera"/>
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_camera" args="-urdf -param /camera_description -model rgbd_camera"/>
 
   <param name="lidar_description" command="$(find xacro)/xacro --inorder '$(find vehicle_simulator)/urdf/lidar.urdf.xacro'" />
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_lidar" args="-urdf -param /lidar_description -model lidar"/>
