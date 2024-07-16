@@ -160,8 +160,10 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloud2) {
     float pointY = point.y;
     float pointZ = point.z;
 
+    // relative distance between the point and the vehicle
     float dis = sqrt((pointX - vehicleX) * (pointX - vehicleX) +
                      (pointY - vehicleY) * (pointY - vehicleY));
+    // points near the robot will be postprocessed and analyzed
     if (pointZ - vehicleZ > minRelZ - disRatioZ * dis &&
         pointZ - vehicleZ < maxRelZ + disRatioZ * dis &&
         dis < terrainVoxelSize * (terrainVoxelHalfWidth + 1)) {
