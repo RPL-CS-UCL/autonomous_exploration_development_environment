@@ -337,7 +337,7 @@ int main(int argc, char** argv)
 
   nav_msgs::Odometry odomData;
   odomData.header.frame_id = "map";
-  odomData.child_frame_id = "sensor";
+  odomData.child_frame_id = "sensor"; // same as the lidar frame (velodyne)
 
   tf::TransformBroadcaster tfBroadcaster;
   tf::StampedTransform odomTrans;
