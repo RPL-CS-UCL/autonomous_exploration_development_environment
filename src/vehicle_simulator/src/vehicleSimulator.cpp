@@ -449,50 +449,36 @@ int main(int argc, char** argv)
 
     //////////////////////////////////
     // NOTE(gogojjh): Simulate IMU Measurements
-    Eigen::Vector3d gravity(0.0, 0.0, -9.81);
-    if (init_odom) {
-      odomData.pose.pose.orientation = geoQuat;
-      odomData.pose.pose.position.x = vehicleX;
-      odomData.pose.pose.position.y = vehicleY;
-      odomData.pose.pose.position.z = vehicleZ;
-      odomData.twist.twist.angular.x = 200.0 * (vehicleRoll - vehicleRecRoll);
-      odomData.twist.twist.angular.y = 200.0 * (vehiclePitch - vehicleRecPitch);
-      odomData.twist.twist.angular.z = vehicleYawRate;
-      odomData.twist.twist.linear.x = vehicleSpeed;
-      odomData.twist.twist.linear.z = 200.0 * (vehicleZ - vehicleRecZ);
+    // Eigen::Vector3d gravity(0.0, 0.0, -9.81);
+    // if (init_odom) {
+      // double dt = (odomData.header.stamp - odomData_last.header.stamp).toSec();
+      // // v = v0 + at
+      // Eigen::Vector3d linear_acceleration = Eigen::Vector3d(
+      //     odomData.twist.twist.linear.x - odomData_last.twist.twist.linear.x,
+      //     odomData.twist.twist.linear.y - odomData_last.twist.twist.linear.y,
+      //     odomData.twist.twist.linear.z - odomData_last.twist.twist.linear.z) / dt - gravity;
 
-      double dt = (odomData.header.stamp - odomData_last.header.stamp).toSec();
-      Eigen::Vector3d velocity = Eigen::Vector3d(
-        odomData.pose.pose.position.x - odomData_last.pose.pose.position.x,
-        odomData.pose.pose.position.y - odomData_last.pose.pose.position.y,
-        odomData.pose.pose.position.z - odomData_last.pose.pose.position.z
-      );
-      Eigen::Vector3d linear_acceleration = velocity / dt - gravity;
-      Eigen::Vector3d angular_acceleration = Eigen::Vector3d(
-        odomData.twist.twist.angular.x,
-        odomData.twist.twist.angular.y,
-        odomData.twist.twist.angular.z
-      ) / dt;
-      sensor_msgs::Imu imu_msg;
-      imu_msg.header.stamp = odomTime;
-      imu_msg.header.frame_id = "imu_link";
-      imu_msg.orientation = odomData.pose.pose.orientation;
-      imu_msg.angular_velocity.x = angular_acceleration.x();
-      imu_msg.angular_velocity.y = angular_acceleration.y();
-      imu_msg.angular_velocity.z = angular_acceleration.z();
-      imu_msg.linear_acceleration.x = linear_acceleration.x();
-      imu_msg.linear_acceleration.y = linear_acceleration.y();
-      imu_msg.linear_acceleration.z = linear_acceleration.z();
-      pubIMU.publish(imu_msg);
-
-      // imuState.pose = robotState.pose;
-      // pubModelState.publish(imuState);
-
-      odomData_last = odomData;
-    } else {
-      odomData_last = odomData;
-      init_odom = true;
-    }
+      // Eigen::Vector3d angular_velocity = Eigen::Vector3d(
+      //     odomData.twist.twist.angular.x, odomData.twist.twist.angular.y, odomData.twist.twist.angular.z);
+          
+      // sensor_msgs::Imu imu_msg;
+      // imu_msg.header.stamp = odomTime;
+      // imu_msg.header.frame_id = "imu_link";
+      // imu_msg.orientation = odomData.pose.pose.orientation;
+      // imu_msg.angular_velocity.x = angular_velocity.x();
+      // imu_msg.angular_velocity.y = angular_velocity.y();
+      // imu_msg.angular_velocity.z = angular_velocity.z();
+      // imu_msg.linear_acceleration.x = linear_acceleration.x();
+      // imu_msg.linear_acceleration.y = linear_acceleration.y();
+      // imu_msg.linear_acceleration.z = linear_acceleration.z();
+      // pubIMU.publish(imu_msg);
+    //   odomData_last = odomData;
+    // } else {
+    //   odomData_last = odomData;
+    //   init_odom = true;
+    // }
+    imuState.pose = robotState.pose;
+    pubModelState.publish(imuState);
     //////////////////////////////////
 
     status = ros::ok();
