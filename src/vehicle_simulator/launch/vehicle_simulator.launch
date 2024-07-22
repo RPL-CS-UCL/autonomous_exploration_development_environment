@@ -86,4 +86,6 @@
 
   <node pkg="tf" type="static_transform_publisher" name="habitatTransPublisher" args="0 0 0 0 0 0 /rgbd_camera /habitat_camera 1000"/>
 
+  <node pkg="tf" type="static_transform_publisher" name="imuTransPublisher" args="0 0 0 0 0 0 /vehicle /imu_link 1000"/>
+
 </launch>
