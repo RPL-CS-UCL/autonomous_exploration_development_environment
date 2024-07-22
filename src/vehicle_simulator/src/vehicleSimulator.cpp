@@ -349,8 +349,9 @@ int main(int argc, char** argv)
   cameraState.model_name = "rgbd_camera";
   gazebo_msgs::ModelState lidarState;
   lidarState.model_name = "lidar";
-  gazebo_msgs::ModelState imuState;
-  imuState.model_name = "imu";
+  // NOTE(gogojjh): not use IMU
+  // gazebo_msgs::ModelState imuState;
+  // imuState.model_name = "imu";
   gazebo_msgs::ModelState robotState;
   robotState.model_name = "robot";
 
@@ -434,11 +435,12 @@ int main(int argc, char** argv)
     robotState.pose.position.z = vehicleZ;
     pubModelState.publish(robotState);
 
-    imuState.pose.orientation = geoQuat;
-    imuState.pose.position.x = vehicleX;
-    imuState.pose.position.y = vehicleY;
-    imuState.pose.position.z = vehicleZ;
-    pubModelState.publish(imuState);
+    // NOTE(gogojjh): not use IMU
+    // imuState.pose.orientation = geoQuat;
+    // imuState.pose.position.x = vehicleX;
+    // imuState.pose.position.y = vehicleY;
+    // imuState.pose.position.z = vehicleZ;
+    // pubModelState.publish(imuState);
 
     geoQuat = tf::createQuaternionMsgFromRollPitchYaw(terrainRoll, terrainPitch, 0);
 
