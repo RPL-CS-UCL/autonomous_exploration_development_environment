@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <tf/transform_broadcaster.h>
 
 #include <opencv2/opencv.hpp>
@@ -99,15 +100,20 @@ void ProcessRGBDImage(PointCloudT::Ptr &depth_cloud,
 // ***************************** Callback Functions ************************** //
 // ******************************************^^^^***************************** //
 void ColorDepthImageCallback(const sensor_msgs::ImageConstPtr& color_msg,
-                             const sensor_msgs::ImageConstPtr& depth_msg) {
+                             const sensor_msgs::ImageConstPtr& depth_msg,
+                             const sensor_msgs::CameraInfoConstPtr& cam_info_msg) {
   try {
+    ros::Time timestamp = depth_msg->header.stamp;
     cv::Mat depth_image =
         cv_bridge::toCvCopy(depth_msg, sensor_msgs::image_encodings::TYPE_32FC1)
             ->image;
     cv::Mat color_image =
         cv_bridge::toCvCopy(color_msg, sensor_msgs::image_encodings::BGR8)
             ->image;
-    ros::Time timestamp = depth_msg->header.stamp;
+    Eigen::Matrix3d K;
+    K << cam_info_msg->K[0], cam_info_msg->K[1], cam_info_msg->K[2], cam_info_msg->K[3],
+        cam_info_msg->K[4], cam_info_msg->K[5], cam_info_msg->K[6], cam_info_msg->K[7], cam_info_msg->K[8];
+    camera_intrinsics = K.cast<float>();
 
     cv::Mat depth_image_float;
     ProcessDepthImage(depth_image, depth_image_float);
@@ -122,15 +128,20 @@ void ColorDepthImageCallback(const sensor_msgs::ImageConstPtr& color_msg,
 }
 
 void SemDepthImageCallback(const sensor_msgs::ImageConstPtr& sem_msg,
-                           const sensor_msgs::ImageConstPtr& depth_msg) {
+                           const sensor_msgs::ImageConstPtr& depth_msg,
+                           const sensor_msgs::CameraInfoConstPtr& cam_info_msg) {
   try {
+    ros::Time timestamp = depth_msg->header.stamp;
     cv::Mat depth_image =
         cv_bridge::toCvCopy(depth_msg, sensor_msgs::image_encodings::TYPE_32FC1)
             ->image;
     cv::Mat sem_image =
         cv_bridge::toCvCopy(sem_msg, sensor_msgs::image_encodings::BGR8)
             ->image;
-    ros::Time timestamp = depth_msg->header.stamp;
+    Eigen::Matrix3d K;
+    K << cam_info_msg->K[0], cam_info_msg->K[1], cam_info_msg->K[2], cam_info_msg->K[3],
+        cam_info_msg->K[4], cam_info_msg->K[5], cam_info_msg->K[6], cam_info_msg->K[7], cam_info_msg->K[8];
+    camera_intrinsics = K.cast<float>();
 
     cv::Mat depth_image_float;
     ProcessDepthImage(depth_image, depth_image_float);
@@ -152,27 +163,20 @@ int main(int argc, char** argv) {
   ros::NodeHandle nh, nh_private("~");
 
   // clang-format off
-  const float width = 640.0f;
-  const float height = 360.0f;
-  const float hfov = 114.591560981; // deg
-  const float f = width / (2.0 * tan(hfov / 2.0 * M_PI / 180.0));
-  const float cx = width / 2.0;
-  const float cy = height / 2.0;
-  camera_intrinsics << f, 0.0, cx, 0.0, f, cy, 0.0, 0.0, 1.0;
-  std::cout << "camera_intrinsics: \n" << camera_intrinsics << std::endl;
-
   // Create a publisher for the point cloud
   color_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/habitat_camera/color_pointcloud", 100);
   semantic_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/habitat_camera/semantic_pointcloud", 100);
 
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> RGBDSyncPolicy;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo> RGBDSyncPolicy;
   message_filters::Subscriber<sensor_msgs::Image> depth_sub(nh, "/habitat_camera/depth/image", 10);
   message_filters::Subscriber<sensor_msgs::Image> color_sub(nh, "/habitat_camera/color/image", 10);
   message_filters::Subscriber<sensor_msgs::Image> sem_sub(nh, "/habitat_camera/semantic/image", 10);
-  message_filters::Synchronizer<RGBDSyncPolicy> color_depth_sync(RGBDSyncPolicy(100), color_sub, depth_sub);
-  message_filters::Synchronizer<RGBDSyncPolicy> sem_depth_sync(RGBDSyncPolicy(100), sem_sub, depth_sub);
-  color_depth_sync.registerCallback(boost::bind(&ColorDepthImageCallback, _1, _2));
-  sem_depth_sync.registerCallback(boost::bind(&SemDepthImageCallback, _1, _2));
+  message_filters::Subscriber<sensor_msgs::CameraInfo> color_cam_info_sub(nh, "/habitat_camera/color/camera_info", 10);
+  message_filters::Subscriber<sensor_msgs::CameraInfo> depth_cam_info_sub(nh, "/habitat_camera/depth/camera_info", 10);
+  message_filters::Synchronizer<RGBDSyncPolicy> color_depth_sync(RGBDSyncPolicy(100), color_sub, depth_sub, color_cam_info_sub);
+  message_filters::Synchronizer<RGBDSyncPolicy> sem_depth_sync(RGBDSyncPolicy(100), sem_sub, depth_sub, color_cam_info_sub);
+  color_depth_sync.registerCallback(boost::bind(&ColorDepthImageCallback, _1, _2, _3));
+  sem_depth_sync.registerCallback(boost::bind(&SemDepthImageCallback, _1, _2, _3));
   ros::spin();
   // clang-format on
 

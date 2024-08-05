@@ -10,6 +10,7 @@ from habitat_sim.utils.common import (
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image as ROS_Image
+from sensor_msgs.msg import CameraInfo
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 import argparse
@@ -27,7 +28,7 @@ from PIL import Image
 from scipy.spatial.transform import Rotation as R
 
 default_sim_settings = {
-    "frame_rate": 30, # image frame rate
+    "frame_rate": 15, # image frame rate
     "width": 640, # horizontal resolution
     "height": 360, # vertical resolution
     "hfov": 114.591560981, # horizontal FOV
@@ -126,7 +127,7 @@ class DemoRunner:
         camera_odom = Odometry()
         camera_odom.header.stamp = rospy.Time.from_sec(self.time)
         camera_odom.header.frame_id = 'map'
-        camera_odom.child_frame_id = 'rgbd_camera'
+        camera_odom.child_frame_id = 'habitat_camera'
         roll = self.camera_roll - 1.5708
         pitch = self.camera_pitch
         yaw = self.camera_yaw - 1.5708
@@ -146,6 +147,25 @@ class DemoRunner:
         camera_odom.pose.pose.position.z = z
         self.camera_odom_pub.publish(camera_odom)        
 
+    def publish_camera_info(self, camera_info_pub):
+        width, height = default_sim_settings["width"], default_sim_settings["height"]
+        hfov = default_sim_settings["hfov"]
+        f = width / (2.0 * math.tan(hfov / 2.0 * math.pi / 180.0))
+        cx = width / 2.0
+        cy = height / 2.0
+
+        camera_info = CameraInfo()
+        camera_info.header.stamp = rospy.Time.from_sec(self.time)
+        camera_info.header.frame_id = "habitat_camera"
+        camera_info.width = width
+        camera_info.height = height
+        camera_info.distortion_model = "plumb_bob"
+        camera_info.K = [f, 0.0, cx, 0.0, f, cy, 0.0, 0.0, 1.0]
+        camera_info.D = [0.0, 0.0, 0.0, 0.0, 0.0]
+        camera_info.R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+        camera_info.P = [f, 0.0, cx, 0.0, 0.0, f, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+        camera_info_pub.publish(camera_info)
+
     def publish_color_observation(self, obs):
         color_obs = obs["color_sensor"]
         color_img = Image.fromarray(color_obs, mode="RGBA")
@@ -164,8 +184,9 @@ class DemoRunner:
 
     def publish_depth_observation(self, obs):
         depth_obs = obs["depth_sensor"]
-        depth_img = Image.fromarray((depth_obs / 10 * 255).astype(np.uint8), mode="L")
-        self.depth_image.data = np.array(depth_img.convert("L")).tobytes()
+        # NOTE(gogojjh): publish depth_image as float32
+        depth_img = Image.fromarray(depth_obs, mode="F")
+        self.depth_image.data = np.array(depth_img).tobytes()
         self.depth_image.header.stamp = rospy.Time.from_sec(self.time)
         self.depth_image_pub.publish(self.depth_image)
 
@@ -194,7 +215,7 @@ class DemoRunner:
         rospy.init_node("habitat_online")
         
         rospy.Subscriber("/state_estimation", Odometry, self.state_estimation_callback)
-        self.time = 0;
+        self.time = 0
         self.camera_roll = 0
         self.camera_pitch = 0
         self.camera_yaw = 0
@@ -214,15 +235,19 @@ class DemoRunner:
             self.color_image.step = 3 * self.color_image.width
             self.color_image.is_bigendian = False
 
+            self.color_camera_info_pub = rospy.Publisher("/habitat_camera/color/camera_info", CameraInfo, queue_size=2)
+
         if self._sim_settings["depth_sensor"]:
             self.depth_image_pub = rospy.Publisher("/habitat_camera/depth/image", ROS_Image, queue_size=2)
             self.depth_image = ROS_Image()
             self.depth_image.header.frame_id = "habitat_camera"
             self.depth_image.height = settings["height"]
             self.depth_image.width  = settings["width"]
-            self.depth_image.encoding = "mono8"
-            self.depth_image.step = self.color_image.width
+            self.depth_image.encoding = "32FC1"
+            self.depth_image.step = self.color_image.width * 4
             self.depth_image.is_bigendian = False
+
+            self.depth_camera_info_pub = rospy.Publisher("/habitat_camera/depth/camera_info", CameraInfo, queue_size=2)
 
         if self._sim_settings["semantic_sensor"]:
             self.semantic_image_pub = rospy.Publisher("/habitat_camera/semantic/image", ROS_Image, queue_size=2)
@@ -263,8 +288,10 @@ class DemoRunner:
             self.publish_camera_odometry()
             if self._sim_settings["color_sensor"]:
                 self.publish_color_observation(observations)
+                self.publish_camera_info(self.color_camera_info_pub)
             if self._sim_settings["depth_sensor"]:
                 self.publish_depth_observation(observations)
+                self.publish_camera_info(self.depth_camera_info_pub)
             if self._sim_settings["semantic_sensor"]:
                 self.publish_semantic_observation(observations)
 
