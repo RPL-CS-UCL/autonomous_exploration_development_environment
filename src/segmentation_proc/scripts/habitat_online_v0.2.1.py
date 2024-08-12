@@ -31,7 +31,7 @@ default_sim_settings = {
     "width": 640, # horizontal resolution
     "height": 360, # vertical resolution
     "hfov": 114.591560981, # horizontal FOV
-    "camera_offset_z": 0, # camera z-offset
+    "camera_offset_z": 0.0, # camera z-offset
     "color_sensor": True,  # RGB sensor
     "depth_sensor": True,  # depth sensor
     "semantic_sensor": True,  # semantic sensor
@@ -142,8 +142,8 @@ class DemoRunner:
 
     def publish_depth_observation(self, obs):
         depth_obs = obs["depth_sensor"]
-        depth_img = Image.fromarray((depth_obs / 10 * 255).astype(np.uint8), mode="L")
-        self.depth_image.data = np.array(depth_img.convert("L")).tobytes()
+        depth_img = Image.fromarray(depth_obs, mode="F")
+        self.depth_image.data = np.array(depth_img).tobytes()
         self.depth_image.header.stamp = rospy.Time.from_sec(self.time)
         self.depth_image_pub.publish(self.depth_image)
 
