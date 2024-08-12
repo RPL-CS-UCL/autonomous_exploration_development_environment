@@ -199,7 +199,7 @@ class DemoRunner:
             self.depth_image.header.frame_id = "habitat_camera"
             self.depth_image.height = settings["height"]
             self.depth_image.width  = settings["width"]
-            self.depth_image.encoding = "mono8"
+            self.depth_image.encoding = "32FC1"
             self.depth_image.step = self.color_image.width
             self.depth_image.is_bigendian = False
 
