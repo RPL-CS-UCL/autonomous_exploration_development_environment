@@ -601,7 +601,23 @@ public:
                 {
                   val = 0;
                 }
-                joy_msg.axes[event.number] = val * scale;
+
+                //////////////////////////////////////////////////
+                // NOTE(gogojjh): switch the ESM-9013 joystick output to ps3
+                const char* found = strstr(current_joy_name, "ESM-9013");
+                if (found != nullptr) {
+                  if (event.number == 2)
+                    joy_msg.axes[3] = val * scale;
+                  else if (event.number == 3)
+                    joy_msg.axes[4] = val * scale;
+                  else if (event.number == 4)
+                    joy_msg.axes[2] = val * scale;
+                  else
+                    joy_msg.axes[event.number] = val * scale;
+                } else {
+                  joy_msg.axes[event.number] = val * scale;
+                }
+                //////////////////////////////////////////////////
               }
 
               publish_soon = true;
