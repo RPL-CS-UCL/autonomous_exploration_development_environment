@@ -1,4 +1,7 @@
 <launch>
+  
+  <!-- remap topics  -->
+  <!-- <remap from="/registered_scan" to="/depth_projection"/> -->
 
   <node pkg="terrain_analysis" type="terrainAnalysis" name="terrainAnalysis" output="screen" required="true">
     <param name="scanVoxelSize" type="double" value="0.05" />

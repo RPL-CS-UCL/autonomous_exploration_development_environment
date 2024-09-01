@@ -168,8 +168,11 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
     laserCloudDwz->clear();
     laserDwzFilter.setInputCloud(laserCloudCrop);
     laserDwzFilter.filter(*laserCloudDwz);
+    /////////////////////////////////////////////////////
+    // NOTE SEB changed it
+    // newLaserCloud = true;
 
-    newLaserCloud = true;
+    /////////////////////////////////////////////////////
   }
 }
 
