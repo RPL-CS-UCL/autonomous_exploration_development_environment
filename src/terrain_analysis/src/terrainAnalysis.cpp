@@ -155,7 +155,6 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloud2) {
   int laserCloudSize = laserCloud->points.size();
   for (int i = 0; i < laserCloudSize; i++) {
     point = laserCloud->points[i];
-
     float pointX = point.x;
     float pointY = point.y;
     float pointZ = point.z;
@@ -198,6 +197,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
   ros::NodeHandle nhPrivate = ros::NodeHandle("~");
 
+  nhPrivate.getParam("terrainVoxelSize", terrainVoxelSize);
   nhPrivate.getParam("scanVoxelSize", scanVoxelSize);
   nhPrivate.getParam("decayTime", decayTime);
   nhPrivate.getParam("noDecayDis", noDecayDis);
@@ -253,7 +253,6 @@ int main(int argc, char **argv) {
 
     if (newlaserCloud) {
       newlaserCloud = false;
-
       // terrain voxel roll over
       float terrainVoxelCenX = terrainVoxelSize * terrainVoxelShiftX;
       float terrainVoxelCenY = terrainVoxelSize * terrainVoxelShiftY;
@@ -365,8 +364,7 @@ int main(int argc, char **argv) {
           int laserCloudDwzSize = laserCloudDwz->points.size();
           for (int i = 0; i < laserCloudDwzSize; i++) {
             point = laserCloudDwz->points[i];
-            float dis = sqrt((point.x - vehicleX) * (point.x - vehicleX) +
-                             (point.y - vehicleY) * (point.y - vehicleY));
+            float dis = sqrt((point.x - vehicleX) * (point.x - vehicleX) + (point.y - vehicleY) * (point.y - vehicleY));
             if (point.z - vehicleZ > minRelZ - disRatioZ * dis &&
                 point.z - vehicleZ < maxRelZ + disRatioZ * dis &&
                 (laserCloudTime - systemInitTime - point.intensity <
