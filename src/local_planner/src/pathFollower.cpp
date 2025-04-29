@@ -142,22 +142,29 @@ void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
 {
   joyTime = ros::Time::now().toSec();
 
-  joySpeedRaw = sqrt(joy->axes[3] * joy->axes[3] + joy->axes[4] * joy->axes[4]);
-  joySpeed = joySpeedRaw;
-  if (joySpeed > 1.0) joySpeed = 1.0;
-  if (joy->axes[4] == 0) joySpeed = 0;
-  joyYaw = joy->axes[3];
-  if (joySpeed == 0 && noRotAtStop) joyYaw = 0;
-
-  if (joy->axes[4] < 0 && !twoWayDrive) {
-    joySpeed = 0;
-    joyYaw = 0;
-  }
-
-  if (joy->axes[2] > -0.1) {
-    autonomyMode = false;
-  } else {
+  if (joy->buttons[6] > 0.1) {
+    // NOTE(gogojjh): Click one button to switch autonomy
+    joySpeed = 1.0;
     autonomyMode = true;
+  } else {
+    // NOTE(gogojjh): Other logic
+    joySpeedRaw = sqrt(joy->axes[3] * joy->axes[3] + joy->axes[4] * joy->axes[4]);
+    joySpeed = joySpeedRaw;
+    if (joySpeed > 1.0) joySpeed = 1.0;
+    if (joy->axes[4] == 0) joySpeed = 0;
+    joyYaw = joy->axes[3];
+    if (joySpeed == 0 && noRotAtStop) joyYaw = 0;
+
+    if (joy->axes[4] < 0 && !twoWayDrive) {
+      joySpeed = 0;
+      joyYaw = 0;
+    }
+
+    if (joy->axes[2] > -0.1) {
+      autonomyMode = false;
+    } else {
+      autonomyMode = true;
+    }
   }
 }
 
