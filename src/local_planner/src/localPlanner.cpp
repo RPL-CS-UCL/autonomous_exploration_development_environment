@@ -234,17 +234,6 @@ void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
     } else {
       autonomyMode = true;
     }
-
-    ///////////////////////////////////////////
-    // NOTE(gogojjh):
-    // Joystick control rule: 
-    // backward-forward: ax[4] in [-1, 1], ax[3] = 0
-    // clockwise-counterclockwise rotate: ax[3] in [-1, 1], ax[4] = 0
-    // not move for other joystick states:
-    if (abs(joy->axes[3]) > 0.05 && abs(joy->axes[4]) > 0.05) {
-      joySpeed = 0;
-    }
-    ///////////////////////////////////////////
   }
 
   if (joy->axes[5] > -0.1) {
@@ -252,6 +241,17 @@ void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
   } else {
     checkObstacle = false;
   }
+
+  ///////////////////////////////////////////
+  // NOTE(gogojjh):
+  // Joystick control rule: 
+  // backward-forward: ax[4] in [-1, 1], ax[3] = 0
+  // clockwise-counterclockwise rotate: ax[3] in [-1, 1], ax[4] = 0
+  // not move for other joystick states:
+  if (abs(joy->axes[3]) > 0.05 && abs(joy->axes[4]) > 0.05) {
+    joySpeed = 0;
+  }
+  ///////////////////////////////////////////
 }
 
 void goalHandler(const geometry_msgs::PointStamped::ConstPtr& goal)
