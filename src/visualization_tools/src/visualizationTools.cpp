@@ -230,7 +230,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber subRuntime = nh.subscribe<std_msgs::Float32> ("/runtime", 5, runtimeHandler);
 
-  ros::Publisher pubOverallMap = nh.advertise<sensor_msgs::PointCloud2> ("/overall_map", 5);
+  ros::Publisher pubOverallMap = nh.advertise<sensor_msgs::PointCloud2> ("/overall_map_dense", 5);
 
   ros::Publisher pubExploredArea = nh.advertise<sensor_msgs::PointCloud2> ("/explored_areas", 5);
   pubExploredAreaPtr = &pubExploredArea;

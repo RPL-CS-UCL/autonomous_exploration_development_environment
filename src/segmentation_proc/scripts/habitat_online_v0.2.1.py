@@ -30,8 +30,8 @@ from scipy.spatial.transform import Rotation as R
 default_sim_settings = {
     "frame_rate": 15, # image frame rate
     "width": 640, # horizontal resolution
-    "height": 360, # vertical resolution
-    "hfov": 114.591560981, # horizontal FOV
+    "height": 480, # vertical resolution
+    "hfov": 78.80337, # horizontal FOV
     "camera_offset_z": 0.0, # camera z-offset
     "color_sensor": True,  # RGB sensor
     "depth_sensor": True,  # depth sensor
