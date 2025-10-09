@@ -26,10 +26,10 @@
     <sensor type="depth" name="camera">
       <update_rate>30.0</update_rate>
       <camera name="head">
-        <horizontal_fov>2.0</horizontal_fov>
+        <horizontal_fov>1.3753783135</horizontal_fov>
         <image>
           <width>640</width>
-          <height>360</height>
+          <height>480</height>
           <format>R8G8B8</format>
         </image>
         <clip>
